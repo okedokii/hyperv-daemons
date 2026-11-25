@@ -1,7 +1,7 @@
 # Template file for 'hyperv-daemons'
 pkgname=hyperv-daemons
 version=6.18.65
-revision=2
+revision=1
 archs="x86_64"
 wrksrc="linux-${version%.*}"
 hostmakedepends="patch xz"

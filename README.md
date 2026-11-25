@@ -9,8 +9,9 @@ The repository is an overlay for the official void-packages tree. CI uses a pinn
 ## Status
 
 - Operator local build of 6.18.65_1 succeeded: both packages registered; source checksums passed.
-- Revision 2 adds stderr redirection to both runit services. Compiler packed-member warnings in upstream file-copy code remain.
-- Package tests were disabled in the reported local build. Hosted CI and real Hyper-V acceptance are pending.
+- The first release retains revision 1 and includes stderr redirection for both runit services. Compiler packed-member warnings in upstream file-copy code remain.
+- The first hosted CI attempt built and registered both packages, but artifact collection failed because it sourced the XBPS template outside xbps-src. Artifact collection now queries the local package repository directly; the corrected run is pending.
+- Package tests were disabled in the reported local build. Real Hyper-V acceptance is pending.
 - KVP is the primary target; VSS and file copy are not validated.
 - Host IP injection is unsupported; services are opt-in.
 

@@ -20,12 +20,19 @@ printf '%s\n' XBPS_CHROOT_CMD=uchroot > etc/conf
 chown builder:builder etc/conf
 sudo -u builder ./xbps-src binary-bootstrap
 sudo -u builder ./xbps-src pkg hyperv-daemons
-. srcpkgs/hyperv-daemons/template
+# Read the built package version from XBPS metadata, not by sourcing
+# an xbps-src template outside its build environment.
+repo="$PWD/hostdir/binpkgs"
 for name in hyperv-daemons hyperv-daemons-lsvmbus; do
-    file="$name-$version"_"$revision.x86_64.xbps"
-    test -s "hostdir/binpkgs/$file"
-    cp "hostdir/binpkgs/$file" /out/
-    xbps-query --repository="$PWD/hostdir/binpkgs" -R -f "$name"
+    pkgver=$(xbps-query --repository="$repo" -R -p pkgver "$name")
+    case "$pkgver" in
+        "$name"-[0-9]*) ;;
+        *) printf 'Unexpected pkgver: %s\n' "$pkgver" >&2; exit 1 ;;
+    esac
+    file="$pkgver.x86_64.xbps"
+    test -s "$repo/$file"
+    xbps-query --repository="$repo" -R -f "$name"
+    cp "$repo/$file" /out/
 done
 cd /out
 sha256sum ./*.xbps > SHA256SUMS

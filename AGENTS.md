@@ -5,3 +5,4 @@
 - Keep services opt-in, preserve fail-closed IP injection, and do not claim runtime acceptance based on a successful build.
 - Require green CI and real Hyper-V acceptance before publishing a verified release. Never commit credentials, keys or binary artifacts.
 - Keep README and acceptance results current.
+- Keep revision=1 until the initial package release; increment the revision for subsequent packaging changes to a published upstream version.
