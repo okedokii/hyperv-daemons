@@ -1,0 +1,10 @@
+#!/bin/sh
+exec 2>&1
+if [ ! -c /dev/vmbus/hv_vss ]; then
+	modprobe hv_utils 2>/dev/null || :
+fi
+if [ ! -c /dev/vmbus/hv_vss ]; then
+	sleep 5
+	exit 1
+fi
+exec hv_vss_daemon -n
