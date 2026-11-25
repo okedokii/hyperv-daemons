@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fail closed: never apply upstream RHEL configuration to Void.
+printf '%s\n' 'Hyper-V IP injection is not supported on Void Linux' >&2
+exit 1

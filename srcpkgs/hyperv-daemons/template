@@ -1,0 +1,42 @@
+# Template file for 'hyperv-daemons'
+pkgname=hyperv-daemons
+version=6.18.65
+revision=1
+archs="x86_64"
+wrksrc="linux-${version%.*}"
+hostmakedepends="patch xz"
+depends="iproute2 kmod python3"
+short_desc="Linux guest integration daemons for Microsoft Hyper-V"
+maintainer="Orphaned <orphan@voidlinux.org>"
+license="GPL-2.0-only"
+homepage="https://www.kernel.org/"
+distfiles="${KERNEL_SITE}/kernel/v${version%%.*}.x/linux-${version%.*}.tar.xz
+ ${KERNEL_SITE}/kernel/v${version%%.*}.x/patch-${version}.xz"
+skip_extraction="patch-${version}.xz"
+checksum="9106a4605da9e31ff17659d958782b815f9591ab308d03b0ee21aad6c7dced4b
+ 9c2a6f4c72e2b7f47fc3c8618e20fb3f602bafa308dcffd8f2ddc0c37390c8ed"
+
+post_extract() {
+	xzcat "${XBPS_SRCDISTDIR}/${pkgname}-${version}/patch-${version}.xz" |
+		patch -sNp1 -F0
+}
+
+do_build() {
+	mkdir -p tools/hv/include/linux
+	cp include/uapi/linux/hyperv.h tools/hv/include/linux/
+	make -C tools/hv ${makejobs} ARCH=x86_64 CC="$CC" LD="$LD" \
+		CFLAGS="$CFLAGS -I$(pwd)/tools/hv/include"
+}
+
+do_install() {
+	vbin tools/hv/hv_kvp_daemon
+	vbin tools/hv/hv_vss_daemon
+	vbin tools/hv/hv_fcopy_uio_daemon
+	vbin tools/hv/lsvmbus
+	vinstall tools/hv/hv_get_dns_info.sh 755 usr/libexec/hypervkvpd hv_get_dns_info
+	vinstall "${FILESDIR}/hv_get_dhcp_info" 755 usr/libexec/hypervkvpd
+	vinstall "${FILESDIR}/hv_set_ifconfig" 755 usr/libexec/hypervkvpd
+	vsv hv-kvp-daemon
+	vsv hv-vss-daemon
+	vdoc "${FILESDIR}/README.voidlinux"
+}

@@ -1,0 +1,25 @@
+name: Build XBPS
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build in official Void container
+        run: |
+          mkdir -p artifacts
+          docker run --rm --privileged -v /dev:/dev -v "$PWD:/overlay:ro" -v "$PWD/artifacts:/out" ghcr.io/void-linux/void-glibc-full /bin/sh /overlay/ci/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hyperv-daemons-x86_64
+          path: artifacts/
+          if-no-files-found: error

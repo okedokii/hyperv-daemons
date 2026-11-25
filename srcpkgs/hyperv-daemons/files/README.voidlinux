@@ -1,0 +1,9 @@
+Experimental Hyper-V guest integration. Enable KVP with:
+    ln -s /etc/sv/hv-kvp-daemon /var/service/
+    sv status hv-kvp-daemon
+Enable host Data Exchange. KVP needs hv_utils and /dev/vmbus/hv_kvp.
+DHCP reporting is an observed dynamic IPv4 heuristic. DNS reads resolv.conf.
+Host IP injection fails closed. VSS is optional and requires disposable-VM
+freeze/thaw testing before enabling. File copy binary is included without a
+service; UIO binding and behavior are untested. lsvmbus is included and uses Python 3. No services are enabled automatically.
+Only x86_64 glibc is supported. Runtime acceptance on Hyper-V is pending.
