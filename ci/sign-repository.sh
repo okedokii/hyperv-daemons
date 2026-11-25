@@ -56,7 +56,9 @@ else:
     raise SystemExit("Local XBPS repository server did not start")
 PY
 mkdir "$tmp/root"
-xbps-install -Syi -r "$tmp/root" --repository=http://127.0.0.1:8765
+# XBPS asks for explicit key import even with -y. Only approve our own
+# isolated loopback repository, then compare the exported key to the pin.
+printf 'y\n' | xbps-install -Syi -r "$tmp/root" --repository=http://127.0.0.1:8765
 set -- "$tmp/root"/var/db/xbps/keys/*.plist
 test "$#" -eq 1
 test -s "$1"
