@@ -1,0 +1,62 @@
+name: Publish signed XBPS repository
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: xbps-pages-publish
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/build.yml
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: xbps-signing
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: hyperv-daemons-x86_64
+          path: unsigned
+      - name: Prepare signing container
+        run: docker build -t hyperv-signing -f ci/signing.Dockerfile .
+      - name: Sign repository
+        env:
+          XBPS_PRIVATE_KEY: ${{ secrets.XBPS_PRIVATE_KEY }}
+          XBPS_PUBLIC_KEY_SHA256: ${{ vars.XBPS_PUBLIC_KEY_SHA256 }}
+        run: |
+          set -eu
+          test -n "$XBPS_PRIVATE_KEY"
+          test -n "$XBPS_PUBLIC_KEY_SHA256"
+          umask 077
+          key=$(mktemp "$RUNNER_TEMP/xbps-signing.XXXXXX")
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$XBPS_PRIVATE_KEY" > "$key"
+          unset XBPS_PRIVATE_KEY
+          mkdir -m 755 site
+          docker run --rm --network none \
+            -v "$PWD:/overlay:ro" -v "$PWD/unsigned:/input:ro" \
+            -v "$PWD/site:/out" -v "$key:/signing-key:ro" \
+            hyperv-signing /bin/sh /overlay/ci/sign-repository.sh \
+            /input /out /signing-key "$XBPS_PUBLIC_KEY_SHA256"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: sign
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy signed repository
+        id: deployment
+        uses: actions/deploy-pages@v4
