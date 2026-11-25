@@ -5,7 +5,7 @@ revision=1
 archs="x86_64"
 wrksrc="linux-${version%.*}"
 hostmakedepends="patch xz"
-depends="iproute2 kmod"
+depends="iproute2 kmod python3"
 short_desc="Linux guest integration daemons for Microsoft Hyper-V"
 maintainer="Orphaned <orphan@voidlinux.org>"
 license="GPL-2.0-only"
@@ -39,12 +39,4 @@ do_install() {
 	vsv hv-kvp-daemon
 	vsv hv-vss-daemon
 	vdoc "${FILESDIR}/README.voidlinux"
-}
-
-hyperv-daemons-lsvmbus_package() {
-	short_desc="Hyper-V VMBus device listing utility"
-	depends="python3"
-	pkg_install() {
-		vmove usr/bin/lsvmbus
-	}
 }
